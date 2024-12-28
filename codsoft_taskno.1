@@ -1,1 +1,127 @@
 # CODSOFT
+import javax.swing.*;
+import java.awt.*;
+
+public class NumberGuess extends JFrame {
+    private static final int MAX_ATTEMPTS = 10;
+    private int random_Number,attempts_Left,total_Score;
+    private JButton submit_Button,playAgain_Button,exit_Button;
+    private JTextField guess_Input;
+    private JLabel feedback_Label,score_Label;
+
+    public NumberGuess() {
+        random_Number=generateRandomNumber();
+        attempts_Left = MAX_ATTEMPTS;
+        total_Score = 0;
+        feedback_Label = new JLabel("Guess the number between (1-100). You have " + MAX_ATTEMPTS + " attempts",JLabel.CENTER);
+        feedback_Label.setFont(new Font("Rockwell",Font.BOLD,18));
+        score_Label = new JLabel("Total Score: 0",JLabel.CENTER);
+        score_Label.setFont(new Font("Gadugi",Font.BOLD,20));
+        guess_Input = new JTextField(35);
+        guess_Input.setHorizontalAlignment(JTextField.CENTER);
+
+        submit_Button = new JButton("Submit");
+        submit_Button.setBackground(Color.CYAN);
+        submit_Button.setForeground(Color.BLACK);
+        submit_Button.setFont(new Font("Gadugi",Font.BOLD,14));
+        submit_Button.addActionListener(e -> processGuess());
+
+        playAgain_Button = new JButton("Play Again");
+        playAgain_Button.setBackground(Color.BLUE);
+        playAgain_Button.setForeground(Color.WHITE);
+        playAgain_Button.setFont(new Font("Gadugi",Font.BOLD,14));
+        playAgain_Button.addActionListener(e -> resetGame());
+        playAgain_Button.setVisible(false);
+
+        exit_Button = new JButton("Exit");
+        exit_Button.setBackground(Color.RED);
+        exit_Button.setForeground(Color.WHITE);
+        exit_Button.setFont(new Font("Gadugi",Font.BOLD,14));
+        exit_Button.addActionListener(e -> System.exit(0));
+        exit_Button.setVisible(false);
+
+        JPanel input_Panel = new JPanel(new FlowLayout(FlowLayout.CENTER,10,10));
+        input_Panel.add(guess_Input);
+
+        JPanel submitPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        submitPanel.add(submit_Button);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.add(playAgain_Button);
+        buttonPanel.add(exit_Button);
+
+        JPanel mainPanel = new JPanel(new GridLayout(5,1,5,5));
+        mainPanel.add(feedback_Label);
+        mainPanel.add(input_Panel);
+        mainPanel.add(submitPanel);
+        mainPanel.add(buttonPanel);
+        mainPanel.add(score_Label);
+        add(mainPanel);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(550,400);
+        setTitle("Number Game");
+        setVisible(true);
+    }
+
+    private int generateRandomNumber() {
+        return (int)Math.round(Math.random()*100);
+    }
+
+    private void startNewRound() {
+        random_Number = generateRandomNumber();
+        attempts_Left = MAX_ATTEMPTS;
+        guess_Input.setText("");
+        feedback_Label.setText("Guess the number (1-100). You have " + MAX_ATTEMPTS + " attempts");
+        submit_Button.setEnabled(true);
+        playAgain_Button.setVisible(false);
+        exit_Button.setVisible(false);
+    }
+
+    private void processGuess() {
+        if (guess_Input.getText().isEmpty()) {
+            feedback_Label.setText("Please enter a number!");
+            return;
+        }
+
+        try {
+            int guess = Integer.parseInt(guess_Input.getText().trim());
+            guess_Input.setText("");
+            attempts_Left--;
+
+            if (guess < random_Number) {
+                feedback_Label.setText("The number is too low!!   |   Attempts left: " + attempts_Left);
+            } else if (guess > random_Number) {
+                feedback_Label.setText("The number is Too high!!   |   Attempts left: "+ attempts_Left);
+            } else {
+
+                int score=attempts_Left+1;
+                total_Score += score;
+                score_Label.setText("Total Score: " + total_Score);
+                feedback_Label.setText("Congratulations! You guessed it in " + (MAX_ATTEMPTS - attempts_Left) + " attempts.");
+                endRound();
+                return;
+            }
+
+            if (attempts_Left == 0 && guess != random_Number) {
+                feedback_Label.setText("Out of attempts! The number was " + random_Number);
+                endRound();
+            }
+        } catch (NumberFormatException e) {
+            feedback_Label.setText("Invalid input. Please enter a number");
+        }
+    }
+
+    private void endRound() {
+        submit_Button.setEnabled(false);
+        playAgain_Button.setVisible(true);
+        exit_Button.setVisible(true);
+    }
+
+    private void resetGame() {
+        startNewRound();
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(NumberGuess::new);
+    }
+}
