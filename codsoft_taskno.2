@@ -1,0 +1,151 @@
+import javax.swing.*;
+import java.awt.*;
+
+public class StudentGradeCalculator {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = createFrame("Student Grade Calculator");
+            JPanel input_Panel = new JPanel(new GridBagLayout());
+            addComponentsToInputPanel(input_Panel, frame);
+            frame.add(input_Panel, BorderLayout.CENTER);
+            frame.setVisible(true);
+        });
+    }
+
+    private static JFrame createFrame(String title) {
+        JFrame frame = new JFrame(title);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(480, 480);
+        return frame;
+    }
+
+    private static void addComponentsToInputPanel(JPanel input_Panel, JFrame frame) {
+        JLabel subject_Label = new JLabel("Enter the number of subjects:");
+        subject_Label.setFont(new Font("Rockwell", Font.BOLD, 16));
+
+        JTextField subject_Field = new JTextField(10);
+        subject_Field.setFont(new Font("Arial", Font.PLAIN, 14));
+        subject_Field.setHorizontalAlignment(JTextField.CENTER);
+
+        JButton submit_Button = createButton("Submit", new Color(135, 206, 235));
+        submit_Button.addActionListener(e -> handleSubjectSubmission(frame, subject_Field));
+
+        addToPanel(input_Panel, subject_Label, 0);
+        addToPanel(input_Panel, subject_Field, 1);
+        addToPanel(input_Panel, submit_Button, 2);
+    }
+
+    private static void addToPanel(JPanel panel, JComponent component, int yPos) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.gridx = 0;
+        gbc.gridy = yPos;
+        gbc.anchor = GridBagConstraints.CENTER;
+        panel.add(component, gbc);
+    }
+
+    private static JButton createButton(String text, Color color) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setBackground(color);
+        button.setOpaque(true);
+        button.setBorderPainted(false);
+        return button;
+    }
+
+    private static void handleSubjectSubmission(JFrame frame, JTextField subject_Field) {
+        try {
+            int subject_Count = Integer.parseInt(subject_Field.getText());
+            JPanel marks_Panel = new JPanel();
+            marks_Panel.setLayout(new BoxLayout(marks_Panel, BoxLayout.Y_AXIS));
+
+            JLabel instructions = new JLabel("Enter marks for each subject:");
+            instructions.setFont(new Font("Arial", Font.BOLD, 16));
+            instructions.setAlignmentX(Component.CENTER_ALIGNMENT);
+            marks_Panel.add(instructions);
+
+            JTextField[] mark_Fields = new JTextField[subject_Count];
+            for (int i = 0; i < subject_Count; i++) {
+                JPanel row = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                row.add(new JLabel("Subject " + (i + 1) + ":"));
+                mark_Fields[i] = new JTextField(5);
+                row.add(mark_Fields[i]);
+                marks_Panel.add(row);
+            }
+
+            JButton calculate_Button = createButton("Calculate", new Color(144, 236, 144));
+            calculate_Button.addActionListener(e -> handleCalculation(frame, mark_Fields, subject_Count));
+            marks_Panel.add(calculate_Button);
+
+            switchPanel(frame, marks_Panel);
+        } 
+        catch (NumberFormatException ex) {
+            showMessage(frame, "Please enter a valid number of subjects.");
+        }
+    }
+
+    private static void handleCalculation(JFrame frame, JTextField[] mark_Fields, int subject_Count) {
+        try {
+            int totalMarks = 0;
+            for (int i = 0; i < subject_Count; i++) {
+                int mark = Integer.parseInt(mark_Fields[i].getText());
+                if (mark < 0 || mark > 100) {
+                    throw new IllegalArgumentException("Subject " + (i + 1) + " has an invalid mark: " + mark + ". " + "Please enter a valid mark (0 - 100)");
+                }
+                totalMarks += mark;
+            }
+            double average = (double) totalMarks / subject_Count;
+            String grade = calculateGrade(average);
+
+            JPanel result_Panel = new JPanel(new GridBagLayout());
+            JLabel total_Label = new JLabel("Total Marks: " + totalMarks);
+            total_Label.setFont(new Font("Lucida Bright", Font.BOLD, 18));
+            addToPanel(result_Panel, total_Label, 0);
+
+            JLabel average_Label = new JLabel(String.format("Average Percentage: %.2f%%", average));
+            average_Label.setFont(new Font("Lucida Bright", Font.BOLD, 18));
+            addToPanel(result_Panel, average_Label, 1);
+
+            JLabel grade_Label = new JLabel("Grade: " + grade);
+            grade_Label.setFont(new Font("Arial Rounded MT Bold", Font.BOLD, 30));
+            grade_Label.setForeground(getGradeColor(grade));
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            gbc.insets = new Insets(20, 0, 0, 0);
+            result_Panel.add(grade_Label, gbc);
+            switchPanel(frame, result_Panel);
+        } 
+        catch (NumberFormatException ex) {
+            showMessage(frame, "Please enter valid marks for all subjects.");
+        } 
+        catch (IllegalArgumentException ex) {
+            showMessage(frame, ex.getMessage());
+        }
+    }
+
+    private static void switchPanel(JFrame frame, JPanel newPanel) {
+        frame.getContentPane().removeAll();
+        frame.add(newPanel, BorderLayout.CENTER);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private static Color getGradeColor(String grade) {
+        switch (grade) {
+            case "A": return Color.GREEN;
+            case "B": return Color.MAGENTA;
+            case "C": return Color.BLUE;
+            case "D": return Color.RED;
+            default: return Color.BLACK;
+        }
+    }
+
+    private static String calculateGrade(double percentage) {
+        return percentage >= 90 ? "A" : percentage >= 80 ? "B" : percentage >= 70 ? "C" : percentage >= 60 ? "D" : "F";
+    }
+
+    private static void showMessage(JFrame frame, String message) {
+        JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
