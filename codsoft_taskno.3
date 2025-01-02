@@ -1,0 +1,128 @@
+import javax.swing.*;
+import java.awt.*;
+
+public class AtmInterface extends JFrame {
+    private BankAccount account;
+
+    public AtmInterface() {
+        account = new BankAccount(0.0);
+
+        setTitle("ATM Interface");
+        setSize(450, 500);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+
+        JLabel title_Label = new JLabel("ATM", SwingConstants.CENTER);
+        title_Label.setFont(new Font("Arial", Font.BOLD, 24));
+        title_Label.setForeground(Color.MAGENTA);
+        add(title_Label, BorderLayout.NORTH);
+
+
+        JPanel button_Panel = new JPanel();
+        button_Panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 20));
+
+
+        JButton withdraw_Button = createButton("Withdraw", Color.RED, 12, 100, 40);
+        withdraw_Button.addActionListener(e -> handleWithdraw());
+        button_Panel.add(withdraw_Button);
+
+        JButton deposit_Button = createButton("Deposit", Color.GREEN, 12, 100, 40);
+        deposit_Button.addActionListener(e -> handleDeposit());
+        button_Panel.add(deposit_Button);
+
+        JButton checkBalance_Button = createButton("Check Balance", Color.BLUE, 12, 100, 40);
+        checkBalance_Button.addActionListener(e -> handleCheckBalance());
+        button_Panel.add(checkBalance_Button);
+
+        JButton exit_Button = createButton("Exit", Color.GRAY, 12, 100, 40);
+        exit_Button.addActionListener(e -> System.exit(0));
+        button_Panel.add(exit_Button);
+
+        add(button_Panel, BorderLayout.CENTER);
+        setVisible(true);
+    }
+
+    private JButton createButton(String text, Color color, int fontSize, int width, int height) {
+        JButton button = new JButton(text);
+        button.setBackground(color);
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Arial", Font.PLAIN, fontSize));
+        button.setPreferredSize(new Dimension(width, height));
+        return button;
+    }
+
+    private void handleWithdraw() {
+        String input = JOptionPane.showInputDialog(this, "Enter amount to withdraw (in ₹):");
+        if (input != null) {
+            try {
+                double amount = Double.parseDouble(input);
+                if (amount <= 0) {
+                    JOptionPane.showMessageDialog(this, "Invalid amount. Enter a valid amount in rupees.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else if (amount > 50000) {
+                    JOptionPane.showMessageDialog(this, "Transaction limit exceeded. Enter an amount between 0 and 50000.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else if (account.withdraw(amount)) {
+                    JOptionPane.showMessageDialog(this, "Withdrawn: ₹" + amount);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Insufficient balance or invalid amount.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Invalid input. Please enter a valid numeric amount in rupees.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void handleDeposit() {
+        String input = JOptionPane.showInputDialog(this, "Enter amount to deposit (in ₹):");
+        if (input != null) {
+            try {
+                double amount = Double.parseDouble(input);
+                if (amount <= 0) {
+                    JOptionPane.showMessageDialog(this, "Invalid amount. Enter a valid amount in rupees.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else if (amount > 50000) {
+                    JOptionPane.showMessageDialog(this, "Transaction limit exceeded. Enter an amount between 0 and 50000.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    account.deposit(amount);
+                    JOptionPane.showMessageDialog(this, "Deposited: ₹" + amount);
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Invalid input. Please enter a valid numeric amount in rupees.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void handleCheckBalance() {
+        JOptionPane.showMessageDialog(this, "Balance: ₹" + account.getBalance(), "Account Balance", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    
+class BankAccount {
+    private double balance;
+
+    public BankAccount(double initialBalance) {
+        this.balance = initialBalance;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public boolean withdraw(double amount) {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    public void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+        }
+    }
+}
+
+    public static void main(String[] args) {
+        new AtmInterface();
+    }
+}
